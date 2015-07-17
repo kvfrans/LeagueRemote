@@ -1,0 +1,119 @@
+<script src="http://ce212d3c.ngrok.io:80/socket.io/socket.io.js"></script>
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+
+<style>
+html, body {
+  overflow-x: hidden;
+}
+body {
+  position: relative
+}
+
+* { margin:0; padding:0; } /* to remove the top and left whitespace */
+html, body { width:100%; height:100%; } /* just to be sure these are full screen*/
+canvas { display:block; } /* To remove the scrollbars */
+
+</style>
+<span id="console"></span>s
+<canvas id="canvas"></canvas>
+
+<script>
+
+var hasdone = false;
+
+    var name = "0"
+    
+
+  var socket = io.connect('http://ce212d3c.ngrok.io'); // connec to server
+
+  socket.on('name', function(msg){
+    name = msg.name;
+    if(!hasdone)
+    {
+        socket.emit('moved', {x: 0, y: 0, name: 0});
+        hasdone = true;
+    }
+  });
+
+
+
+
+    //socket.emit('moved', { vector: '300 \n300' }); // raise an event on the server
+
+    var canvas = document.getElementById('canvas'),
+    ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    $('#canvas').css('background-color', 'rgba(158, 167, 184, 0.2)');
+
+    
+
+    socket.on('positions', function(msg){
+
+        console.log(msg);
+
+        ctx.clearRect ( 0 , 0 , canvas.width, canvas.height );
+        for(var i = 0; i < msg.length; i++)
+        {
+            if(msg[i] != null)
+            {
+                ctx.beginPath();
+                ctx.moveTo(canvas.width/2,canvas.height/2);
+                ctx.lineTo(msg[i].x + canvas.width/2,msg[i].y + canvas.height/2);
+                ctx.stroke();
+                ctx.font="20px Georgia";
+                ctx.fillText("kevin #"+i,msg[i].x,msg[i].y);
+            }
+        }
+        
+    });
+    
+
+    var mouse = {x: 0, y: 0};
+
+    document.addEventListener('mousemove', function(e){ 
+        mouse.x = e.clientX || e.pageX; 
+        mouse.y = e.clientY || e.pageY 
+
+        $("#console").html("your name is kevin #" + name + " " + mouse.x + " " + mouse.y);
+        
+        socket.emit('moved', {x: mouse.x - canvas.width/2, y: mouse.y - canvas.height/2, name: name});
+    }, false);
+
+
+
+    window.addEventListener('load', function(){ // on page load
+     
+        document.body.addEventListener('touchmove', function(e){
+        var x = parseInt(e.changedTouches[0].pageX);
+        var y = parseInt(e.changedTouches[0].pageY);
+        
+        mouse.x = x; 
+        mouse.y = y; 
+
+        $("#console").html("your name is kevin #" + name + " " + mouse.x + " " + mouse.y);
+        
+        socket.emit('moved', {x: mouse.x - canvas.width/2, y: mouse.y - canvas.height/2, name: name});
+
+        }, false)
+
+    document.ontouchmove = function(event){
+        event.preventDefault();
+    }
+     
+    }, false)
+
+    
+
+</script>
+
+
+lol hi
+
+
+
+
+
+
